@@ -1,7 +1,8 @@
-export interface UserInterface{
-    id?: number | null
-    name: string
-    email: string
-    password: string
-    user_type: string
+export interface UserInterface {
+  id?: number;
+  name: string;
+  email: string;
+  password: string;
+  accessToken?: string;
+  user_type: string;
 }

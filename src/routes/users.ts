@@ -1,9 +1,9 @@
 import { Router } from "express";
+import Authentication from "../middlewares/Authentication";
+import User from "../models/user";
+import UserController from "../app/user/UserController";
 const router = Router();
-const USER_ROUTES_PREFIX = "/user";
 
-router.get(`/user`, (req, res) => {
-  res.json({ message: "Users" });
-});
+router.get(`/user`, Authentication.authenticate,UserController.getTheUsers);
 
 export default router;

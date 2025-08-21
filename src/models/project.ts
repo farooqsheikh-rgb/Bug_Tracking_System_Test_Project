@@ -41,7 +41,7 @@ export default class Project extends Model {
 
   @BelongsToMany(() => User, () => ProjectAssignment)
   assignedUsers!: User[];
-
+  
   @HasMany(() => Bug)
   bugs!: Bug[];
 }

@@ -9,9 +9,11 @@ import {
   NotEmpty,
   ForeignKey,
   BelongsTo,
+  BelongsToMany,
 } from "sequelize-typescript";
 import Project from "./project";
 import User from "./user";
+import BugAssignment from "./bugAssignment";
 
 @Table({
   tableName: "bugs",
@@ -36,8 +38,9 @@ export default class Bug extends Model {
 
   @Column({
     type: DataType.STRING,
+    allowNull: true, 
     validate: {
-      is: /.*\\.(png|gif)$/i,
+      is: /.*\.(png|gif)$/i,
     },
   })
   screenshot?: string;
@@ -68,13 +71,9 @@ export default class Bug extends Model {
   @Column(DataType.INTEGER)
   qa_id!: number;
 
-  @BelongsTo(() => User, { as: "qa" })
+  @BelongsTo(() => User, { as: "QA" })
   qa!: User;
 
-  @ForeignKey(() => User)
-  @Column(DataType.INTEGER)
-  developer_id!: number;
-
-  @BelongsTo(() => User, { as: "developer" })
-  developer!: User;
+  @BelongsToMany(() => User, () => BugAssignment)
+  assignedDevelopers!: User;
 }

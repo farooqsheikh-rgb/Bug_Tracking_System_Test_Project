@@ -12,9 +12,9 @@ import {
   BelongsToMany,
   HasMany,
 } from "sequelize-typescript";
-import ProjectAssignment from "./projectAssignment";
 import User from "./user";
 import Bug from "./bug";
+import ProjectMembers from "./projectMembers";
 
 @Table({
   tableName: "projects",
@@ -36,12 +36,12 @@ export default class Project extends Model {
   @Column(DataType.INTEGER)
   manager_id!: number;
 
-  @BelongsTo(() => User, { as: "manager" })
+  @BelongsTo(() => User)
   manager!: User;
 
-  @BelongsToMany(() => User, () => ProjectAssignment)
+  @BelongsToMany(() => User, () => ProjectMembers)
   assignedUsers!: User[];
-  
+
   @HasMany(() => Bug)
   bugs!: Bug[];
 }

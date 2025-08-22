@@ -2,10 +2,7 @@ import { Validators } from "../helpers/validator";
 import User from "../models/user";
 
 class UserHandler {
-  static async setAccessToken(
-    userId: number,
-    accessToken: string,
-  ) {
+  static async setAccessToken(userId: number, accessToken: string) {
     return User.update(
       {
         accessToken: accessToken,
@@ -33,7 +30,7 @@ class UserHandler {
     return user.save();
   }
 
-  static getAuthenticateUser(userId:string, email:string, authToken:string) {
+  static getAuthenticateUser(userId: string, email: string, authToken: string) {
     return User.findOne({
       where: {
         email,

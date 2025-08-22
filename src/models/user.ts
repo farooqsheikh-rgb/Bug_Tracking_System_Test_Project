@@ -12,8 +12,10 @@ import {
 } from "sequelize-typescript";
 import { UserInterface } from "../interfaces/users";
 import Project from "./project";
-import ProjectAssignment from "./projectAssignment";
+import ProjectAssignment from "./projectMembers";
 import Bug from "./bug";
+import BugAssignedDeveloper from "./bugAssignedDeveloper";
+import ProjectMembers from "./projectMembers";
 
 @Table({
   tableName: "users",
@@ -53,12 +55,12 @@ export default class User extends Model implements UserInterface {
   @HasMany(() => Project)
   managedProjects!: Project[];
 
-  @BelongsToMany(() => Project, () => ProjectAssignment)
+  @BelongsToMany(() => Project, () => ProjectMembers)
   assignedProjects!: Project[];
 
-  @HasMany(() => Bug, { foreignKey: "qa_id" })
+  @HasMany(() => Bug, { foreignKey: "user_id" })
   reportedBugs!: Bug[];
 
-  @HasMany(() => Bug, { foreignKey: "developer_id" })
-  assignedBugs!: Bug[];
+  @BelongsToMany(() => Bug, () => BugAssignedDeveloper)
+  developerAssignedBugs!: Bug[];
 }

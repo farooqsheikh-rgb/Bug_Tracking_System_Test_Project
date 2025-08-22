@@ -7,22 +7,22 @@ import {
   ForeignKey,
   DataType,
 } from "sequelize-typescript";
+import Project from "./project";
 import User from "./user";
-import Bug from "./bug";
 
 @Table({
-  tableName: "bug_assignments",
+  tableName: "project_members",
   timestamps: false,
 })
-export default class BugAssignment extends Model {
+export default class ProjectMembers extends Model {
   @AutoIncrement
   @PrimaryKey
   @Column(DataType.INTEGER)
   id!: number;
 
-  @ForeignKey(() => Bug)
+  @ForeignKey(() => Project)
   @Column(DataType.INTEGER)
-  bug_id!: number;
+  project_id!: number;
 
   @ForeignKey(() => User)
   @Column(DataType.INTEGER)

@@ -13,7 +13,7 @@ import {
 } from "sequelize-typescript";
 import Project from "./project";
 import User from "./user";
-import BugAssignment from "./bugAssignment";
+import BugAssignedDeveloper from "./bugAssignedDeveloper";
 
 @Table({
   tableName: "bugs",
@@ -38,7 +38,7 @@ export default class Bug extends Model {
 
   @Column({
     type: DataType.STRING,
-    allowNull: true, 
+    allowNull: true,
     validate: {
       is: /.*\.(png|gif)$/i,
     },
@@ -69,11 +69,11 @@ export default class Bug extends Model {
 
   @ForeignKey(() => User)
   @Column(DataType.INTEGER)
-  qa_id!: number;
+  user_id!: number;
 
-  @BelongsTo(() => User, { as: "QA" })
-  qa!: User;
+  @BelongsTo(() => User)
+  user!: User;
 
-  @BelongsToMany(() => User, () => BugAssignment)
-  assignedDevelopers!: User;
+  @BelongsToMany(() => User, () => BugAssignedDeveloper)
+  assignedDeveloper!: User;
 }

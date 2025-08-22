@@ -1,4 +1,4 @@
-import UserHandler from "../../handlers/UserHandler";
+import UserHandler from "../../handlers/AuthHandler";
 import Token from "../../helpers/token";
 import hashingPassword from "../../utilities/hashingPassword";
 import bcrypt from "bcrypt";
@@ -22,7 +22,11 @@ class AuthManager {
       hashedPassword,
       user_type
     );
-    const getUser = await AuthManager.setAccessToken(user.id,user.email,user.user_type);
+    const getUser = await AuthManager.setAccessToken(
+      user.id,
+      user.email,
+      user.user_type
+    );
 
     return getUser;
   }
@@ -33,13 +37,21 @@ class AuthManager {
     if (!passwordMatched) {
       throw new Error("Password not matched!");
     }
-    user = await AuthManager.setAccessToken(user?.id!,user?.email!,user?.user_type!);
+    user = await AuthManager.setAccessToken(
+      user?.id!,
+      user?.email!,
+      user?.user_type!
+    );
     return user;
   }
 
-  static async setAccessToken(userId:number,userEmail:string,userType:string) {
+  static async setAccessToken(
+    userId: number,
+    userEmail: string,
+    userType: string
+  ) {
     console.log("in setaccess");
-    const accessToken = Token.getLoginToken(userId,userEmail,userType);
+    const accessToken = Token.getLoginToken(userId, userEmail, userType);
     const [_, [updatedUser]] = await UserHandler.setAccessToken(
       userId,
       accessToken

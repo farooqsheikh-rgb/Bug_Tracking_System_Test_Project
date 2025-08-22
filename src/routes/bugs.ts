@@ -1,15 +1,47 @@
-import { Router } from "express"
+import { Router } from "express";
 import Authentication from "../middlewares/Authentication";
 import BugController from "../app/bug/BugController";
 
 const router = Router();
-router.post("/bugs", Authentication.authenticateQA,BugController.addNew);
 
-router.post("/bug/addNew", Authentication.authenticateQA,BugController.addNew);
-router.get("/bug/getbugs", Authentication.authenticateQA,BugController.getBugs);
-router.get("/bug/getbug/:id", Authentication.authenticateQA,BugController.getBug);
-router.get("/bug/searchbug/:name", Authentication.authenticateQA,BugController.searchBug);
-router.delete("/bug/deletebug/:id", Authentication.authenticateManager,BugController.deleteBug);
+router.use(Authentication.authenticate);
 
+router.post("/", Authentication.hasRole("QA"), BugController.createBug);
+
+router.get(
+  "/",
+  Authentication.hasAnyRole(["manager", "QA"]),
+  BugController.getAllBugsByQA
+);
+
+router.get(
+  "/:id",
+  Authentication.hasAnyRole(["manager", "QA"]),
+  BugController.getBugById
+);
+
+router.get(
+  "/search/:title",
+  Authentication.hasAnyRole(["manager", "QA"]),
+  BugController.findBugByTitle
+);
+
+router.delete(
+  "/:id",
+  Authentication.hasRole("QA"),
+  BugController.deleteBugById
+);
+
+router.post(
+  "/:bugId/assignee",
+  Authentication.hasAnyRole(["manager", "QA"]),
+  BugController.assignBugToDeveloper
+);
+
+router.get(
+  "/:bugId/assignee",
+  Authentication.hasAnyRole(["manager", "QA"]),
+  BugController.getBugAssignee
+);
 
 export default router;

@@ -1,12 +1,44 @@
 import { Router } from "express";
 import Authentication from "../middlewares/Authentication";
 import ProjectController from "../app/project/ProjectController";
+
 const router = Router();
 
-router.post("/project/addNew", Authentication.authenticateManager,ProjectController.addNew);
-router.get("/project/getProjects", Authentication.authenticateManager,ProjectController.getProjects);
-router.get("/project/getProject/:id", Authentication.authenticateManager,ProjectController.getProject);
-router.get("/project/searchProject/:name", Authentication.authenticateManager,ProjectController.searchProject);
-router.delete("/project/deleteProject/:id", Authentication.authenticateManager,ProjectController.deleteProject);
+router.use(Authentication.authenticate, Authentication.hasRole('manager'));
+
+router.post(
+  "/",
+  ProjectController.createProject
+);
+
+router.get(
+  "/",
+  ProjectController.getAllProjects
+);
+
+router.get(
+  "/:id",
+  ProjectController.getProjectById
+);
+
+router.get(
+  "/search/:name",
+  ProjectController.searchProjectsByName
+);
+
+router.delete(
+  "/:id",
+  ProjectController.deleteProjectById
+);
+
+router.post(
+  "/:projectId/members",
+  ProjectController.addProjectMembers
+);
+
+router.get(
+  "/:projectId/members",
+  ProjectController.getProjectMembers
+);
 
 export default router;

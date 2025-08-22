@@ -1,11 +1,15 @@
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 
 class Token {
-  static getLoginToken(userId: number,userEmail:string,userType:string): string {
+  static getLoginToken(
+    userId: number,
+    userEmail: string,
+    userType: string
+  ): string {
     const payload = {
       id: userId,
       email: userEmail,
-      user_type:userType
+      user_type: userType,
     };
 
     const options: SignOptions = {

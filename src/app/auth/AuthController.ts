@@ -24,10 +24,10 @@ class AuthController {
     }
   }
 
-  static async signin(req:Request, res:Response) {
+  static async signin(req: Request, res: Response) {
     try {
-      const {email,password} = req.body;
-      const user = await AuthManager.login(email,password);
+      const { email, password } = req.body;
+      const user = await AuthManager.login(email, password);
 
       res.json({
         success: true,
@@ -40,11 +40,9 @@ class AuthController {
         err
       );
 
-      return res
-        .status(500)
-        .json({
-          success: false,
-        });
+      return res.status(500).json({
+        success: false,
+      });
     }
   }
 }

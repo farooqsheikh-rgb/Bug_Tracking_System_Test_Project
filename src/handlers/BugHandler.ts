@@ -1,8 +1,10 @@
 import Bug from "../models/bug";
-import ProjectAssignment from "../models/projectAssignment";
+import Project from "../models/project";
+import ProjectAssignment from "../models/projectMembers";
+import User from "../models/user";
 
 class BugHandler {
-  static findBugByName(title: string) {
+  static findBugByTitle(title: string) {
     return Bug.findOne({ where: { title } });
   }
 
@@ -14,10 +16,10 @@ class BugHandler {
     type: string,
     status: string,
     project_id: number,
-    qa_id: number
+    user_id: number
   ) {
     const projectAssigned = await ProjectAssignment.findOne({
-      where: { project_id: project_id, user_id: qa_id },
+      where: { project_id: project_id, user_id: user_id },
     });
 
     if (!projectAssigned) {
@@ -32,32 +34,85 @@ class BugHandler {
       type,
       status,
       project_id,
-      qa_id,
+      user_id,
     });
     return bug.save();
   }
 
-  static getAllBugs(manager_id: number) {
-    const bugs = Bug.findAll({ where: { manager_id } });
+  static getAllBugsByQA(user_id: number) {
+    const bugs = Bug.findAll({ where: { user_id } });
     return bugs;
   }
 
-  static async findOneProject() {}
-
-  static getOneBug(manager_id: number, id: number) {
-    const bug = Bug.findOne({ where: { id, manager_id } });
+  static getBugById(user_id: number, id: number) {
+    const bug = Bug.findOne({ where: { id, user_id } });
     return bug;
   }
 
-  static getOneBugByName(manager_id: number, name: string) {
-    const bug = Bug.findOne({ where: { name, manager_id } });
+  static getBugByIdByManager(id: number) {
+    const bug = Bug.findOne({ where: { id } });
+    return bug;
+  }
+  static getBugByTitle(user_id: number, title: string) {
+    const bug = Bug.findOne({ where: { title, user_id } });
     return bug;
   }
 
-  static async deleteOneBug(manager_id: number, id: number) {
-    const bug = await Bug.destroy({ where: { id, manager_id } });
+  static async deleteBugById(user_id: number, id: number) {
+    const bug = await Bug.destroy({ where: { id, user_id } });
 
     return bug;
+  }
+
+  static async assignBugToDeveloper(
+    userId: number,
+    bugId: number,
+    developerId: number
+  ) {
+    const bug = await Bug.findOne({
+      where: { id: bugId },
+      include: [Project.associations.assignedUsers!],
+    });
+    if (!bug) {
+      throw new Error("Bug not found or you are not the manager or qa.");
+    }
+    const projectAssigned = await ProjectAssignment.findOne({
+      where: { project_id: bug.project_id, user_id: developerId },
+    });
+
+    if (!projectAssigned) {
+      throw new Error("You are not assigned to this project.");
+    }
+
+    const user = await User.findOne({
+      where: {
+        id: developerId,
+        user_type: "developer",
+      },
+    });
+
+    if (!user) {
+      throw new Error("No valid user found to assign.");
+    }
+
+    const assignedDeveloper = await bug.$add("assignedDeveloper", user);
+    return assignedDeveloper;
+  }
+
+  static async getBugAssignee(bugId: number, userId: number) {
+    const users = await User.findAll({
+      include: {
+        model: Bug,
+        where: { id: bugId },
+        attributes: ["id", "name", "email", "user_type"],
+      },
+    });
+
+    if (!users.length) {
+      throw new Error("Bug not found or you are not the manager or qa.");
+    }
+
+    return users;
   }
 }
 

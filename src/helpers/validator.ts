@@ -7,7 +7,7 @@ export class Validators {
     return typeof str === "string" && str.trim() !== "";
   }
 
-  static parseInteger(value:any, defaultValue:number) {
+  static parseInteger(value: any, defaultValue: number) {
     try {
       value = parseInt(value, 10);
 
@@ -17,4 +17,3 @@ export class Validators {
     }
   }
 }
-

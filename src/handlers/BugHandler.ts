@@ -1,41 +1,42 @@
+import { Op } from "sequelize";
+import { BugConstants, ErrorCodes } from "../constants";
+import Exception from "../helpers/Exception";
+import { BugPayload } from "../interfaces/Bug";
 import Bug from "../models/bug";
 import Project from "../models/project";
 import ProjectAssignment from "../models/projectMembers";
 import User from "../models/user";
+import BugAssignedDeveloper from "../models/bugAssignedDeveloper";
 
 class BugHandler {
   static findBugByTitle(title: string) {
-    return Bug.findOne({ where: { title } });
+    return Bug.findOne({
+      where: {
+        title: {
+          [Op.iLike]: title,
+        },
+      },
+    });
   }
 
-  static async createBug(
-    title: string,
-    description: string,
-    deadline: Date,
-    screenshot: string,
-    type: string,
-    status: string,
-    project_id: number,
-    user_id: number
-  ) {
+  static async createBug(payload: BugPayload, user_id: number) {
     const projectAssigned = await ProjectAssignment.findOne({
-      where: { project_id: project_id, user_id: user_id },
+      where: { project_id: payload.project_id, user_id: user_id },
     });
 
     if (!projectAssigned) {
-      throw new Error("Project not found or you are not assigned.");
+      throw new Exception(
+        BugConstants.MESSAGES.BUG_ALREADY_EXISTS,
+        ErrorCodes.CONFLICT_WITH_CURRENT_STATE,
+        { reportError: true }
+      );
     }
 
     const bug = Bug.build({
-      title,
-      description,
-      deadline,
-      screenshot,
-      type,
-      status,
-      project_id,
+      ...payload,
       user_id,
     });
+
     return bug.save();
   }
 
@@ -54,7 +55,14 @@ class BugHandler {
     return bug;
   }
   static getBugByTitle(user_id: number, title: string) {
-    const bug = Bug.findOne({ where: { title, user_id } });
+    const bug = Bug.findOne({
+      where: {
+        title: {
+          [Op.iLike]: title,
+        },
+        user_id,
+      },
+    });
     return bug;
   }
 
@@ -73,15 +81,24 @@ class BugHandler {
       where: { id: bugId },
       include: [Project.associations.assignedUsers!],
     });
+
     if (!bug) {
-      throw new Error("Bug not found or you are not the manager or qa.");
+      throw new Exception(
+        BugConstants.MESSAGES.BUG_NOT_FOUND,
+        ErrorCodes.DOCUMENT_NOT_FOUND,
+        { reportError: true }
+      );
     }
     const projectAssigned = await ProjectAssignment.findOne({
       where: { project_id: bug.project_id, user_id: developerId },
     });
 
     if (!projectAssigned) {
-      throw new Error("You are not assigned to this project.");
+      throw new Exception(
+        BugConstants.MESSAGES.NOT_ASSIGNED_TO_PROJECT,
+        ErrorCodes.UNAUTHORIZED,
+        { reportError: true }
+      );
     }
 
     const user = await User.findOne({
@@ -92,7 +109,11 @@ class BugHandler {
     });
 
     if (!user) {
-      throw new Error("No valid user found to assign.");
+      throw new Exception(
+        BugConstants.MESSAGES.USER_NOT_FOUND,
+        ErrorCodes.DOCUMENT_NOT_FOUND,
+        { reportError: true }
+      );
     }
 
     const assignedDeveloper = await bug.$add("assignedDeveloper", user);
@@ -100,16 +121,34 @@ class BugHandler {
   }
 
   static async getBugAssignee(bugId: number, userId: number) {
+    console.log(User.associations);
+    // const users = await User.findAll({
+    //   include: {
+    //     model: Bug,
+    //     as: "developerAssignedBugs",
+    //     where: { id: bugId },
+    //     attributes: ["id", "name", "email", "user_type"],
+    //   },
+    // });
     const users = await User.findAll({
-      include: {
-        model: Bug,
-        where: { id: bugId },
-        attributes: ["id", "name", "email", "user_type"],
-      },
+      include: [
+        {
+          model: Bug,
+          as: "developerAssignedBugs",
+          where: { id: bugId },
+          attributes: [],
+          through: { attributes: [] },
+        },
+      ],
+      attributes: ["id", "name", "email", "user_type"],
     });
 
     if (!users.length) {
-      throw new Error("Bug not found or you are not the manager or qa.");
+      throw new Exception(
+        BugConstants.MESSAGES.DEVELOPER_NOT_FOUND,
+        ErrorCodes.DOCUMENT_NOT_FOUND,
+        { reportError: true }
+      );
     }
 
     return users;

@@ -12,7 +12,6 @@ import {
 } from "sequelize-typescript";
 import { UserInterface } from "../interfaces/users";
 import Project from "./project";
-import ProjectAssignment from "./projectMembers";
 import Bug from "./bug";
 import BugAssignedDeveloper from "./bugAssignedDeveloper";
 import ProjectMembers from "./projectMembers";
@@ -58,9 +57,15 @@ export default class User extends Model implements UserInterface {
   @BelongsToMany(() => Project, () => ProjectMembers)
   assignedProjects!: Project[];
 
-  @HasMany(() => Bug, { foreignKey: "user_id" })
+  @HasMany(() => Bug, "user_id")
   reportedBugs!: Bug[];
 
-  @BelongsToMany(() => Bug, () => BugAssignedDeveloper)
+  // @BelongsToMany(() => Bug, () => BugAssignedDeveloper)
+  // developerAssignedBugs!: Bug[];
+
+  @BelongsToMany(() => Bug, {
+    through: () => BugAssignedDeveloper,
+    as: "developerAssignedBugs",
+  })
   developerAssignedBugs!: Bug[];
 }

@@ -1,86 +1,122 @@
+import { BugConstants, ErrorCodes } from "../../constants";
 import BugHandler from "../../handlers/BugHandler";
+import Exception from "../../helpers/Exception";
+import { BugPayload } from "../../interfaces/Bug";
+import BugUtil from "../../utilities/BugUtil";
 
 class BugManager {
-  static async createBug(
-    title: string,
-    description: string,
-    deadline: Date,
-    screenshot: string,
-    type: string,
-    status: string,
-    project_id: number,
-    user_id: number
-  ) {
-    let existingBug = await BugHandler.findBugByTitle(title);
+  static async createBug(payload: BugPayload, user_id?: number) {
+    BugUtil.validateCreateBugRequest(payload, user_id);
+
+    const existingBug = await BugHandler.findBugByTitle(payload.title);
+
     if (existingBug) {
-      throw new Error("Bug with this name already exists.");
+      throw new Exception(
+        BugConstants.MESSAGES.BUG_ALREADY_EXISTS,
+        ErrorCodes.CONFLICT_WITH_CURRENT_STATE,
+        { reportError: true }
+      );
     }
-    let bug = await BugHandler.createBug(
-      title,
-      description,
-      deadline,
-      screenshot,
-      type,
-      status,
-      project_id,
-      user_id
+
+    const bug = await BugHandler.createBug(
+      payload,
+      user_id!
     );
+
     return bug;
   }
 
-  static async getAllBugsByQA(user_id: number) {
-    let bugs = await BugHandler.getAllBugsByQA(user_id);
+  static async getAllBugsByQA(user_id?: number) {
+    BugUtil.validateGetAllBugsByQARequest(user_id);
+
+    const bugs = await BugHandler.getAllBugsByQA(user_id!);
     return bugs;
   }
 
-  static async getBugById(user_id: number, id: number) {
-    let bug = await BugHandler.getBugById(user_id, id);
+  static async getBugById(user_id?: number, id?: number) {
+    BugUtil.validateGetBugByIdRequest(user_id, id);
+
+    const bug = await BugHandler.getBugById(user_id!, id!);
+
     if (!bug) {
-      throw new Error('No bug found.')
+      throw new Exception(
+        BugConstants.MESSAGES.BUG_NOT_FOUND,
+        ErrorCodes.DOCUMENT_NOT_FOUND,
+        { reportError: true }
+      );
     }
+
     return bug;
   }
 
-  static async findBugByName(user_id: number, name: string) {
-    let bug = await BugHandler.getBugByTitle(user_id, name);
+  static async findBugByName(name?: string, user_id?: number) {
+    BugUtil.validateFindBugByNameRequest(name, user_id);
+
+    const bug = await BugHandler.getBugByTitle(user_id!, name!);
+
+    if (!bug) {
+      throw new Exception(
+        BugConstants.MESSAGES.BUG_NOT_FOUND,
+        ErrorCodes.DOCUMENT_NOT_FOUND,
+        { reportError: true }
+      );
+    }
+
     return bug;
   }
 
-  static async deleteBugById(user_id: number, id: number) {
-    let bug = await BugHandler.deleteBugById(user_id, id);
+  static async deleteBugById(user_id?: number, id?: number) {
+    BugUtil.validateDeleteBugByIdRequest(user_id, id);
+
+    const bug = await BugHandler.deleteBugById(user_id!, id!);
+
+    if (!bug) {
+      throw new Exception(
+        BugConstants.MESSAGES.BUG_NOT_FOUND,
+        ErrorCodes.DOCUMENT_NOT_FOUND,
+        { reportError: true }
+      );
+    }
+
     return bug;
   }
 
   static async assignBugToDeveloper(
-    userId: number,
     bugId: number,
-    developerId: number
+    developerId?: number,
+    userId?: number,
   ) {
+    BugUtil.validateAssignBugToDeveloperRequest(bugId, developerId, userId);
+
     const assignedBugs = await BugHandler.assignBugToDeveloper(
-      userId,
+      userId!,
       bugId,
-      developerId
+      developerId!
     );
+
+    if (!assignedBugs) {
+      throw new Exception(
+        BugConstants.MESSAGES.ASSIGN_BUG_FAILED,
+        ErrorCodes.INTERNAL_SERVER_ERROR,
+        { reportError: true }
+      );
+    }
 
     return assignedBugs;
   }
 
-  static async assignBugByManager(
-    userId: number,
-    bugId: number,
-    developerId: number
-  ) {
-    const assignedBugs = await BugHandler.assignBugToDeveloper(
-      userId,
-      bugId,
-      developerId
-    );
+  static async getBugAssignee(bugId: number, userId?: number) {
+    BugUtil.validateGetBugAssigneeRequest(bugId, userId);
 
-    return assignedBugs;
-  }
+    const assignedBugs = await BugHandler.getBugAssignee(bugId, userId!);
 
-  static async getBugAssignee(bugId: number, userId: number) {
-    const assignedBugs = await BugHandler.getBugAssignee(bugId, userId);
+    if (!assignedBugs) {
+      throw new Exception(
+        BugConstants.MESSAGES.FETCH_ASSIGNEE_FAILED,
+        ErrorCodes.INTERNAL_SERVER_ERROR,
+        { reportError: true }
+      );
+    }
 
     return assignedBugs;
   }

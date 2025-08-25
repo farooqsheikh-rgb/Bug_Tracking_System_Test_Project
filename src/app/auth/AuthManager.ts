@@ -1,26 +1,27 @@
 import UserHandler from "../../handlers/AuthHandler";
 import Token from "../../helpers/token";
-import hashingPassword from "../../utilities/hashingPassword";
 import bcrypt from "bcrypt";
 import UserUtil from "../../utilities/UserUtil";
+import { UserInterface } from "../../interfaces/users";
+import AuthUtil from "../../utilities/AuthUtil";
+import { SignIn } from "../../interfaces/SignIn";
+import Exception from "../../helpers/Exception";
+import { ErrorCodes, UserConstants } from "../../constants";
 
 class AuthManager {
   static async signup(
-    name: string,
-    email: string,
-    password: string,
-    user_type: string
+    payload: UserInterface
   ) {
-    let existingUser = await UserHandler.findUserByEmail(email);
-    if (existingUser) {
-      throw new Error("User with this email already exists.");
-    }
-    const hashedPassword: string = await hashingPassword(password);
-    let user = await UserHandler.createUser(
-      name,
-      email,
+    AuthUtil.validateSignUpRequest(payload);
+    const existingUser = await UserHandler.findUserByEmail(payload.email);
+    AuthUtil.validateUserForSignUp(existingUser!);
+
+    const hashedPassword: string =  await AuthUtil.createHashedPassword(payload.password);
+    const user = await UserHandler.createUser(
+      payload.name,
+      payload.email,
       hashedPassword,
-      user_type
+      payload.user_type
     );
     const getUser = await AuthManager.setAccessToken(
       user.id,
@@ -31,11 +32,25 @@ class AuthManager {
     return getUser;
   }
 
-  static async login(email: string, password: string) {
-    let user = await UserHandler.findUserByEmail(email);
-    const passwordMatched = await bcrypt.compare(password, user!.password);
+  static async login(payload: SignIn) {
+    AuthUtil.validateLoginRequest(payload);
+    let user = await UserHandler.findUserByEmail(payload.email!);
+    AuthUtil.validateUserToAuthenticate(user!);
+
+    const passwordMatched = await bcrypt.compare(payload.password!, user!.password);
     if (!passwordMatched) {
-      throw new Error("Password not matched!");
+      console.log(
+        `login:: Password does not match. users:: ${JSON.stringify(
+          user
+        )} data:: `,
+        payload
+      );
+
+      throw new Exception(
+        UserConstants.MESSAGES.PASSWORD_DOES_NOT_MATCH,
+        ErrorCodes.UNAUTHORIZED,
+        { reportError: true }
+      ).toJson();
     }
     user = await AuthManager.setAccessToken(
       user?.id!,

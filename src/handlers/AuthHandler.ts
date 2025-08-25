@@ -1,4 +1,4 @@
-import { Validators } from "../helpers/validator";
+import Validators  from "../helpers/validator";
 import User from "../models/user";
 
 class UserHandler {

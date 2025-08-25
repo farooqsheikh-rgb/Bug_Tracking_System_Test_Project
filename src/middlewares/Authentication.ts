@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import UserHandler from "../handlers/AuthHandler";
 import { UserInterface } from "../interfaces/users";
 import jwt from "jsonwebtoken";
-import { Validators } from "../helpers/validator";
+import Validators from "../helpers/validator";
 import BugHandler from "../handlers/BugHandler";
 import ProjectHandler from "../handlers/ProjectHandler";
 

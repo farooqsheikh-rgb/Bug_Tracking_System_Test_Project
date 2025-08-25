@@ -1,34 +1,46 @@
 import { Request, Response } from "express";
 import ProjectManager from "./ProjectManager";
+import Validators from "../../helpers/validator";
+import { ErrorCodes } from "../../constants/ErrorCodes";
+import { ProjectConstants } from "../../constants/Project";
+import Exception from "../../helpers/Exception";
 
 class ProjectController {
   static async createProject(req: Request, res: Response) {
     try {
       const user = req.user;
       const { name } = req.body;
-      const project = await ProjectManager.createProject(name, user?.id!);
+      const project = await ProjectManager.createProject(name, user?.id);
 
       return res.json({
         success: true,
         data: project,
       });
     } catch (err) {
-      console.error(
-        `Adding Project:: Request to add project failed. data:: `,
-        req.body,
-        err
-      );
+      console.error(`Adding Project:: Request to add project failed. data:: `, req.body, err);
+      
+      const appError = err as Exception;
 
-      return res.status(500).json({
-        success: false,
-      });
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : ProjectConstants.MESSAGES.CREATE_PROJECT_FAILED,
+        });
     }
   }
 
   static async getAllProjects(req: Request, res: Response) {
     try {
       const user = req.user;
-      const projects = await ProjectManager.listProjectsByManager(user?.id!);
+      const projects = await ProjectManager.listProjectsByManager(user?.id);
 
       return res.json({
         success: true,
@@ -37,24 +49,29 @@ class ProjectController {
     } catch (err) {
       console.error(`Get Projects:: Request to get projects failed.`, err);
 
-      return res.status(500).json({
-        success: false,
-      });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : ProjectConstants.MESSAGES.FETCH_PROJECTS_FAILED,
+        });
     }
   }
 
   static async getProjectById(req: Request, res: Response) {
     try {
       const user = req.user;
-      const projectIdParam = req.params.id;
-      if (!projectIdParam) {
-        return res.status(400).json({ message: "Project ID is required" });
-      }
-      const projectId = parseInt(projectIdParam);
-      if (isNaN(projectId)) {
-        return res.status(400).json({ message: "Project ID must be a number" });
-      }
-      const project = await ProjectManager.getProjectById(user?.id!, projectId);
+      const projectIdParam = Number(req.params.id);
+      const project = await ProjectManager.getProjectById(projectIdParam,user?.id);
 
       return res.json({
         success: true,
@@ -63,9 +80,21 @@ class ProjectController {
     } catch (err) {
       console.error(`Get Project:: Request to get project failed.`, err);
 
-      return res.status(500).json({
-        success: false,
-      });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : ProjectConstants.MESSAGES.GET_PROJECT_BY_ID_FAILED,
+        });
     }
   }
 
@@ -73,40 +102,39 @@ class ProjectController {
     try {
       const user = req.user;
       const projectName = req.params.name;
-      if (!projectName) {
-        return res.status(400).json({ message: "Project Name is required" });
-      }
 
-      const project = await ProjectManager.findProjectByName(
-        user?.id!,
-        projectName
-      );
+      const project = await ProjectManager.findProjectByName(projectName, user?.id);
 
       return res.json({
         success: true,
         data: project,
       });
     } catch (err) {
-      console.error(`Get Project:: Request to get project failed.`, err);
+      console.error(`Search Project:: Request to get project failed.`, err);
 
-      return res.status(500).json({
-        success: false,
-      });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : ProjectConstants.MESSAGES.SEARCH_PROJECT_BY_NAME_FAILED,
+        });
     }
   }
 
   static async deleteProjectById(req: Request, res: Response) {
     try {
       const user = req.user;
-      const projectIdParam = req.params.id;
-      if (!projectIdParam) {
-        return res.status(400).json({ message: "Project ID is required" });
-      }
-      const projectId = parseInt(projectIdParam);
-      if (isNaN(projectId)) {
-        return res.status(400).json({ message: "Project ID must be a number" });
-      }
-      const project = await ProjectManager.deleteProjectById(user?.id!, projectId);
+      const projectIdParam = Number(req.params.id);
+      const project = await ProjectManager.deleteProjectById(projectIdParam, user?.id);
 
       return res.json({
         success: true,
@@ -115,31 +143,59 @@ class ProjectController {
     } catch (err) {
       console.error(`Delete Project:: Request to delete project failed.`, err);
 
-      return res.status(500).json({
-        success: false,
-      });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : ProjectConstants.MESSAGES.DELETE_PROJECT_FAILED,
+        });
     }
   }
 
   static async addProjectMembers(req: Request, res: Response) {
     try {
       const manager = req.user;
-      const projectId = req.params.projectId;
+      const projectId = Number(req.params.projectId);
       const { userIds } = req.body;
 
-      if (!manager?.id || !projectId || !Array.isArray(userIds)) {
-        return res.status(400).json({ error: "Invalid request!" });
-      }
-
       const result = await ProjectManager.assignMembersToProject(
-        manager.id,
         Number(projectId),
-        userIds
+        userIds,
+        manager?.id,
+        
       );
 
-      res.status(200).json(result);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      return res.json({
+        success: true,
+        data: result,
+      });
+    } catch (err) {
+      console.error(`Add Project Members:: Request to add project members failed.`, err);
+
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : ProjectConstants.MESSAGES.ADD_PROJECT_MEMBERS_FAILED,
+        });
     }
   }
 
@@ -148,20 +204,30 @@ class ProjectController {
       const managerId = req.user?.id;
       const projectId = Number(req.params.projectId);
 
-      if (!projectId || !managerId) {
-        return res
-          .status(400)
-          .json({ error: "Missing projectId or managerId." });
-      }
+      const assignedUsers = await ProjectManager.listProjectMembers(projectId, managerId);
 
-      const assignedUsers = await ProjectManager.listProjectMembers(
-        projectId,
-        managerId
-      );
+      return res.json({
+        success: true,
+        data: assignedUsers,
+      });    
+    } catch (err) {
+      console.error(`Get Project Members:: Request to get project members failed.`, err);
 
-      res.status(200).json({ users: assignedUsers });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : ProjectConstants.MESSAGES.GET_PROJECT_MEMBERS_FAILED,
+        });
     }
   }
 }

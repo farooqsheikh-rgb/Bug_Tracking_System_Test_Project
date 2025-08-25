@@ -71,9 +71,15 @@ export default class Bug extends Model {
   @Column(DataType.INTEGER)
   user_id!: number;
 
-  @BelongsTo(() => User)
-  user!: User;
+  @BelongsTo(() => User, "user_id")
+  qa!: User;
 
-  @BelongsToMany(() => User, () => BugAssignedDeveloper)
-  assignedDeveloper!: User;
+  // @BelongsToMany(() => User, () => BugAssignedDeveloper)
+  // assignedDeveloper!: User;
+
+  @BelongsToMany(() => User, {
+    through: () => BugAssignedDeveloper,
+    as: "assignedDevelopers",
+  })
+  assignedDevelopers!: User[];
 }

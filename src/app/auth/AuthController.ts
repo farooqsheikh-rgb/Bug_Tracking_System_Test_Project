@@ -1,11 +1,14 @@
 import { Request, Response } from "express";
 import AuthManager from "./AuthManager";
+import Validators from "../../helpers/validator";
+import { ErrorCodes,UserConstants } from "../../constants";
+import Exception from "../../helpers/Exception";
 
 class AuthController {
   static async signup(req: Request, res: Response) {
     try {
-      const { name, email, password, user_type } = req.body;
-      const user = await AuthManager.signup(name, email, password, user_type);
+      console.log('sakjdkhsja')
+      const user = await AuthManager.signup(req.body);
 
       return res.json({
         success: true,
@@ -18,16 +21,27 @@ class AuthController {
         err
       );
 
-      return res.status(500).json({
-        success: false,
-      });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : UserConstants.MESSAGES.SIGN_UP_FAILED,
+        });
     }
   }
 
   static async signin(req: Request, res: Response) {
     try {
-      const { email, password } = req.body;
-      const user = await AuthManager.login(email, password);
+      const user = await AuthManager.login(req.body);
 
       res.json({
         success: true,
@@ -40,9 +54,21 @@ class AuthController {
         err
       );
 
-      return res.status(500).json({
-        success: false,
-      });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : UserConstants.MESSAGES.LOGIN_FAILED,
+        });
     }
   }
 }

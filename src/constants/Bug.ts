@@ -1,0 +1,32 @@
+export const BugConstants = Object.freeze({
+  MESSAGES: {
+    INVALID_DATA_TO_CREATE_BUG: "Invalid data to create bug",
+    INVALID_BUG_TITLE: "Invalid bug title",
+    INVALID_BUG_DESCRIPTION: "Invalid bug description",
+    INVALID_BUG_TYPE: "Invalid bug type",
+    INVALID_BUG_STATUS: "Invalid bug status",
+    INVALID_BUG_DEADLINE: "Invalid bug deadline",
+    INVALID_BUG_SCREENSHOT: "Invalid bug screenshot",
+    INVALID_PROJECT_ID: "Invalid project ID",
+    INVALID_USER_ID: "Invalid user ID",
+    CREATE_BUG_FAILED: "Failed to create bug",
+    FETCH_BUGS_FAILED: "Failed to fetch bugs",
+    GET_BUG_BY_ID_FAILED: "Failed to fetch bug by ID",
+    DELETE_BUG_FAILED: "Failed to delete bug",
+    FIND_BUG_BY_TITLE_FAILED: "Failed to find bug by title",
+    ASSIGN_BUG_TO_DEVELOPER_FAILED: "Failed to assign bug to developer",
+    GET_BUG_ASSIGNEES_FAILED: "Failed to fetch bug assignees",
+    INVALID_BUG_ID: "Invalid bug ID",
+    BUG_NOT_FOUND: "Bug not found",
+    BUG_ID_REQUIRED: "Bug ID is required",
+    TITLE_REQUIRED: "Bug title is required",
+    INVALID_BUG_TITLE_FORMAT: "Bug title must be a non-empty string",
+    BUG_ALREADY_EXISTS: "Bug with this title already exists",
+    INVALID_DEVELOPER_ID: "Invalid developer ID",
+    ASSIGN_BUG_FAILED: "Failed to assign bug to developer",
+    FETCH_ASSIGNEE_FAILED: "Failed to get bug assignee",
+    NOT_ASSIGNED_TO_PROJECT: "Not Assigned to project",
+    USER_NOT_FOUND: "User not found",
+    DEVELOPER_NOT_FOUND: "Developer bot found"
+  }
+} as const);

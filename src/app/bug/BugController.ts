@@ -1,29 +1,14 @@
 import { Request, Response } from "express";
 import BugManager from "./BugManager";
+import Validators from "../../helpers/validator";
+import { ErrorCodes, BugConstants } from "../../constants";
+import Exception from "../../helpers/Exception";
 
 class BugController {
   static async createBug(req: Request, res: Response) {
     try {
       const user = req.user;
-      const {
-        title,
-        description,
-        deadline,
-        screenshot,
-        type,
-        status,
-        project_id,
-      } = req.body;
-      const bug = await BugManager.createBug(
-        title,
-        description,
-        deadline,
-        screenshot,
-        type,
-        status,
-        project_id,
-        user?.id!
-      );
+      const bug = await BugManager.createBug(req.body, user?.id);
 
       return res.json({
         success: true,
@@ -36,16 +21,28 @@ class BugController {
         err
       );
 
-      return res.status(500).json({
-        success: false,
-      });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : BugConstants.MESSAGES.CREATE_BUG_FAILED,
+        });
     }
   }
 
   static async getAllBugsByQA(req: Request, res: Response) {
     try {
       const user = req.user;
-      const bugs = await BugManager.getAllBugsByQA(user?.id!);
+      const bugs = await BugManager.getAllBugsByQA(user?.id);
 
       return res.json({
         success: true,
@@ -54,24 +51,30 @@ class BugController {
     } catch (err) {
       console.error(`Get Bugs:: Request to get bugs failed.`, err);
 
-      return res.status(500).json({
-        success: false,
-      });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : BugConstants.MESSAGES.FETCH_BUGS_FAILED,
+        });
     }
   }
 
   static async getBugById(req: Request, res: Response) {
     try {
       const user = req.user;
-      const bugIdParam = req.params.id;
-      if (!bugIdParam) {
-        return res.status(400).json({ message: "Project ID is required" });
-      }
-      const bugId = parseInt(bugIdParam);
-      if (isNaN(bugId)) {
-        return res.status(400).json({ message: "Project ID must be a number" });
-      }
-      const bug = await BugManager.getBugById(user?.id!, bugId);
+      const bugIdParam = Number(req.params.id);
+
+      const bug = await BugManager.getBugById(user?.id, bugIdParam);
 
       return res.json({
         success: true,
@@ -80,9 +83,21 @@ class BugController {
     } catch (err) {
       console.error(`Get Project:: Request to get project failed.`, err);
 
-      return res.status(500).json({
-        success: false,
-      });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : BugConstants.MESSAGES.GET_BUG_BY_ID_FAILED,
+        });
     }
   }
 
@@ -90,11 +105,8 @@ class BugController {
     try {
       const user = req.user;
       const bugName = req.params.title;
-      if (!bugName) {
-        return res.status(400).json({ message: "Bug Name is required" });
-      }
 
-      const bug = await BugManager.findBugByName(user?.id!, bugName);
+      const bug = await BugManager.findBugByName(bugName, user?.id);
 
       return res.json({
         success: true,
@@ -103,24 +115,30 @@ class BugController {
     } catch (err) {
       console.error(`Get Bug:: Request to get bug failed.`, err);
 
-      return res.status(500).json({
-        success: false,
-      });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : BugConstants.MESSAGES.FIND_BUG_BY_TITLE_FAILED,
+        });
     }
   }
 
   static async deleteBugById(req: Request, res: Response) {
     try {
       const user = req.user;
-      const bugIdParam = req.params.id;
-      if (!bugIdParam) {
-        return res.status(400).json({ message: "Bug ID is required" });
-      }
-      const bugId = parseInt(bugIdParam);
-      if (isNaN(bugId)) {
-        return res.status(400).json({ message: "Project ID must be a number" });
-      }
-      const bug = await BugManager.deleteBugById(user?.id!, bugId);
+      const bugIdParam = Number(req.params.id);
+
+      const bug = await BugManager.deleteBugById(user?.id, bugIdParam);
 
       return res.json({
         success: true,
@@ -129,32 +147,60 @@ class BugController {
     } catch (err) {
       console.error(`Delete Bug:: Request to delete bug failed.`, err);
 
-      return res.status(500).json({
-        success: false,
-      });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : BugConstants.MESSAGES.DELETE_BUG_FAILED,
+        });
     }
   }
 
   static async assignBugToDeveloper(req: Request, res: Response) {
     try {
       const user = req.user;
-      const bugId = req.params.bugId;
-
+      const bugId = Number(req.params.bugId);
       const { userId } = req.body;
-
-      if (!user?.id || !bugId || !userId) {
-        return res.status(400).json({ error: "Invalid request!" });
-      }
-
       const result = await BugManager.assignBugToDeveloper(
-        user.id,
-        Number(bugId),
-        userId
+        bugId,
+        Number(userId),
+        user?.id
       );
 
-      res.status(200).json(result);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      return res.json({
+        success: true,
+        data: result,
+      });
+    } catch (err) {
+      console.error(
+        `Assign Bug To Developer:: Request to assign bug to developer failed.`,
+        err
+      );
+
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : BugConstants.MESSAGES.ASSIGN_BUG_TO_DEVELOPER_FAILED,
+        });
     }
   }
 
@@ -163,15 +209,33 @@ class BugController {
       const userId = req.user?.id;
       const bugId = Number(req.params.bugId);
 
-      if (!bugId || !userId) {
-        return res.status(400).json({ error: "Missing bugId or userId." });
-      }
+      const assignedBugs = await BugManager.getBugAssignee(bugId, userId);
 
-      const assignedBugs = await BugManager.getBugAssignee(userId, userId);
+      return res.json({
+        success: true,
+        data: assignedBugs,
+      });
+    } catch (err) {
+      console.error(
+        `Get Bug Assignee:: Request to get bug assignee failed.`,
+        err
+      );
 
-      res.status(200).json({ users: assignedBugs });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : BugConstants.MESSAGES.GET_BUG_ASSIGNEES_FAILED,
+        });
     }
   }
 }

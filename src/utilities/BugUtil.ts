@@ -90,7 +90,8 @@ class BugUtil {
       );
     }
 
-    if (!Validators.isValidNumber(project_id)) {
+    const projectId = Number(project_id);
+    if (isNaN(projectId)) {
       throw new Exception(
         BugConstants.MESSAGES.INVALID_PROJECT_ID,
         ErrorCodes.BAD_REQUEST,
@@ -146,8 +147,8 @@ class BugUtil {
       );
     }
 
-    if(!name){
-        throw new Exception(
+    if (!name) {
+      throw new Exception(
         BugConstants.MESSAGES.INVALID_BUG_TITLE,
         ErrorCodes.BAD_REQUEST,
         { reportError: true }
@@ -184,7 +185,7 @@ class BugUtil {
   static validateAssignBugToDeveloperRequest(
     bugId: number,
     developerId?: number,
-    userId?: number,
+    userId?: number
   ): void {
     if (!Validators.isValidNumber(userId)) {
       throw new Exception(
@@ -223,6 +224,36 @@ class BugUtil {
     if (!Validators.isValidNumber(userId)) {
       throw new Exception(
         BugConstants.MESSAGES.INVALID_USER_ID,
+        ErrorCodes.BAD_REQUEST,
+        { reportError: true }
+      );
+    }
+  }
+
+  static validateUpdateBugStatusRequest(
+    user_id?: number,
+    bug_id?: number,
+    status?: string
+  ): void {
+    if (!Validators.isValidNumber(user_id)) {
+      throw new Exception(
+        BugConstants.MESSAGES.INVALID_USER_ID,
+        ErrorCodes.BAD_REQUEST,
+        { reportError: true }
+      );
+    }
+
+    if (!Validators.isValidNumber(bug_id)) {
+      throw new Exception(
+        BugConstants.MESSAGES.INVALID_BUG_ID,
+        ErrorCodes.BAD_REQUEST,
+        { reportError: true }
+      );
+    }
+
+    if (!status || typeof status !== "string") {
+      throw new Exception(
+        BugConstants.MESSAGES.INVALID_STATUS,
         ErrorCodes.BAD_REQUEST,
         { reportError: true }
       );

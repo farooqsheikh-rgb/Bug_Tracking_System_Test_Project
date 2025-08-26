@@ -8,7 +8,14 @@ class BugController {
   static async createBug(req: Request, res: Response) {
     try {
       const user = req.user;
-      const bug = await BugManager.createBug(req.body, user?.id);
+      const screenshot = req.file?.filename;
+
+      const bugPayload = {
+        ...req.body,
+        screenshot,
+      };
+
+      const bug = await BugManager.createBug(bugPayload, user?.id);
 
       return res.json({
         success: true,
@@ -235,6 +242,43 @@ class BugController {
           message: appError.reportError
             ? appError.message
             : BugConstants.MESSAGES.GET_BUG_ASSIGNEES_FAILED,
+        });
+    }
+  }
+
+  static async updateBugStatus(req: Request, res: Response) {
+    try {
+      const user = req.user;
+      const bugIdParam = Number(req.params.bugId);
+      const { status } = req.body;
+
+      const updatedBug = await BugManager.updateBugStatus(
+        bugIdParam,
+        status,
+        user?.id
+      );
+
+      return res.json({
+        success: true,
+        data: updatedBug,
+      });
+    } catch (err) {
+      console.error(`Update Bug:: Request to update bug failed.`, err);
+
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : BugConstants.MESSAGES.UPDATE_BUG_FAILED,
         });
     }
   }

@@ -42,5 +42,6 @@ export const UserConstants = Object.freeze({
     USER_DOES_NOT_EXIST: 'User does not exist',
     SOMETHING_WENT_WRONG: 'Something went wrong. Please try again.',
     TOKEN_IS_INVALID_OR_EXPIRED: 'Token is invalid or expired',
+    UNAUTHORIZED_USER: 'User is not Authorized to perform this action'
   }
 } as const);

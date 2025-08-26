@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import Validators from "../helpers/validator";
 import BugHandler from "../handlers/BugHandler";
 import ProjectHandler from "../handlers/ProjectHandler";
+import Exception from "../helpers/Exception";
+import { ErrorCodes, UserConstants } from "../constants";
 
 declare global {
   namespace Express {
@@ -26,8 +28,14 @@ class Authentication {
 
       if (!Array.isArray(tokenParts) || tokenParts.length < 2) {
         console.log(`authenticate:: Token is invalid. token:: `, tokenParts);
-        throw new Error("Error");
+        
+        throw new Exception(
+          UserConstants.MESSAGES.TOKEN_IS_INVALID_OR_EXPIRED,
+          ErrorCodes.CONFLICT_WITH_CURRENT_STATE,
+          { reportError: true }
+        ).toJson();
       }
+
       const token: any = tokenParts[1];
       console.log(token, "coming here", jwt, "secretkey");
       const decoded = jwt.verify(token, "secretkey") as {
@@ -40,7 +48,12 @@ class Authentication {
           `authenticate:: Token is invalid or expired. token:: ${token} decoded:: `,
           decoded
         );
-        throw new Error("Error");
+        
+        throw new Exception(
+          UserConstants.MESSAGES.TOKEN_IS_INVALID_OR_EXPIRED,
+          ErrorCodes.CONFLICT_WITH_CURRENT_STATE,
+          { reportError: true }
+        ).toJson();
       }
 
       const user = await UserHandler.getAuthenticateUser(
@@ -56,7 +69,12 @@ class Authentication {
           `authenticate:: Token is invalid, no user found. token:: ${token} decoded:: `,
           decoded
         );
-        throw new Error("Error");
+        
+        throw new Exception(
+          UserConstants.MESSAGES.TOKEN_IS_INVALID_OR_EXPIRED,
+          ErrorCodes.CONFLICT_WITH_CURRENT_STATE,
+          { reportError: true }
+        ).toJson();
       }
 
       req.user = user;
@@ -64,8 +82,8 @@ class Authentication {
     } catch (error) {
       console.error(error);
 
-      res.status(401).json({
-        message: "Invalid Token",
+      return res.status(ErrorCodes.UNAUTHORIZED).json({
+        message: UserConstants.MESSAGES.INVALID_AUTHENTICATION_TOKEN,
       });
     }
   }
@@ -73,12 +91,14 @@ class Authentication {
   static hasRole(role: string) {
     return (req: Request, res: Response, next: NextFunction) => {
       if (!req.user) {
-        return res.status(401).json({ message: "User not authenticated" });
+        return res.status(ErrorCodes.UNAUTHORIZED).json({
+          message: UserConstants.MESSAGES.INVALID_AUTHENTICATION_TOKEN,
+        });
       }
       if (req.user.user_type !== role) {
-        return res
-          .status(403)
-          .json({ message: `Only ${role}s can perform this action` });
+        return res.status(ErrorCodes.FORBIDDEN).json({
+          message: UserConstants.MESSAGES.UNAUTHORIZED_USER,
+        });
       }
       next();
     };
@@ -88,39 +108,21 @@ class Authentication {
     return async (req: Request, res: Response, next: NextFunction) => {
       try {
         if (!req.user) {
-          return res.status(401).json({ message: "User not authenticated" });
+          return res.status(ErrorCodes.UNAUTHORIZED).json({
+            message: UserConstants.MESSAGES.INVALID_AUTHENTICATION_TOKEN,
+          });
         }
         if (!roles.includes(req.user.user_type)) {
-          return res
-            .status(403)
-            .json({ message: `Only ${roles.join(' or ')} can perform this action` });
-        }
-        if (req.user.user_type === "manager") {
-          const bugId = Number(req.params.bugId);
-          const bug = await BugHandler.getBugByIdByManager(bugId);
-          if (!bug) {
-            throw new Error("Bug not found");
-          }
-          const projectId = Number(bug.project_id);
-          console.log(projectId);
-          const checkPermission = await ProjectHandler.fetchProjectById(
-            req.user.id!,
-            projectId
-          );
-          if (!checkPermission) {
-            return res
-              .status(403)
-              .json({ message: "Manager has no permission for this project" });
-          }
+          return res.status(ErrorCodes.FORBIDDEN).json({
+            message: UserConstants.MESSAGES.UNAUTHORIZED_USER,
+          });
         }
       } catch (err) {
         console.log(err);
-        res.status(500).json({
-          success: false,
-          message: (err as Error).message
+        return res.status(ErrorCodes.UNAUTHORIZED).json({
+          message: UserConstants.MESSAGES.INVALID_AUTHENTICATION_TOKEN,
         });
       }
-
       next();
     };
   }

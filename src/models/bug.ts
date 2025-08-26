@@ -39,9 +39,6 @@ export default class Bug extends Model {
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    validate: {
-      is: /.*\.(png|gif)$/i,
-    },
   })
   screenshot?: string;
 

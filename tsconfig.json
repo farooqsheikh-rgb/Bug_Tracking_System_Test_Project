@@ -44,5 +44,6 @@
     "emitDeclarationOnly": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
-  }
+  },
+  "exclude": ["src/umzug.ts","src/data/migrations/**/*"]
 }

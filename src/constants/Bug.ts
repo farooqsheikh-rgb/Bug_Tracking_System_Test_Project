@@ -27,6 +27,11 @@ export const BugConstants = Object.freeze({
     FETCH_ASSIGNEE_FAILED: "Failed to get bug assignee",
     NOT_ASSIGNED_TO_PROJECT: "Not Assigned to project",
     USER_NOT_FOUND: "User not found",
-    DEVELOPER_NOT_FOUND: "Developer bot found"
-  }
+    DEVELOPER_NOT_FOUND: "Developer bot found",
+    UPDATE_BUG_FAILED: "Failed to update the bug",
+    INVALID_STATUS: "Invalid bug status.",
+    DEVELOPER_NOT_ASSIGNED: "You are not assigned to this bug.",
+    INVALID_STATUS_FOR_TYPE: "Invalid status for the bug type.",
+    QA_NOT_ASSIGNED_TO_PROJECT:"QA not assigned to this project."
+  },
 } as const);

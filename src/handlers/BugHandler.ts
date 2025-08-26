@@ -9,9 +9,10 @@ import User from "../models/user";
 import BugAssignedDeveloper from "../models/bugAssignedDeveloper";
 
 class BugHandler {
-  static findBugByTitle(title: string) {
+  static findBugByTitle(title: string, projectId: number) {
     return Bug.findOne({
       where: {
+        project_id: projectId,
         title: {
           [Op.iLike]: title,
         },
@@ -26,8 +27,8 @@ class BugHandler {
 
     if (!projectAssigned) {
       throw new Exception(
-        BugConstants.MESSAGES.BUG_ALREADY_EXISTS,
-        ErrorCodes.CONFLICT_WITH_CURRENT_STATE,
+        BugConstants.MESSAGES.QA_NOT_ASSIGNED_TO_PROJECT,
+        ErrorCodes.FORBIDDEN,
         { reportError: true }
       );
     }
@@ -45,12 +46,12 @@ class BugHandler {
     return bugs;
   }
 
-  static getBugById(user_id: number, id: number) {
+  static getBugByIdByQA(user_id: number, id: number) {
     const bug = Bug.findOne({ where: { id, user_id } });
     return bug;
   }
 
-  static getBugByIdByManager(id: number) {
+  static getBugById(id: number) {
     const bug = Bug.findOne({ where: { id } });
     return bug;
   }
@@ -152,6 +153,31 @@ class BugHandler {
     }
 
     return users;
+  }
+
+  static async isDeveloperAssignedToBug(
+    user_id: number,
+    bug_id: number
+  ): Promise<boolean> {
+    const assignment = await BugAssignedDeveloper.findOne({
+      where: {
+        user_id,
+        bug_id,
+      },
+    });
+
+    return !!assignment;
+  }
+
+  static async updateBugStatus(bug_id: number, status: string) {
+    const updatedBug = await Bug.update(
+      { status },
+      {
+        where: { id: bug_id },
+      }
+    );
+
+    return updatedBug;
   }
 }
 

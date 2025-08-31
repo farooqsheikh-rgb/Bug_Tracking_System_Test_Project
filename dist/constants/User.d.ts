@@ -1,0 +1,48 @@
+export declare const UserConstants: Readonly<{
+    readonly MESSAGES: {
+        readonly INVALID_DATA_TO_REFRESH_TOKEN: "Invalid data to refresh token";
+        readonly INVALID_DATA_TO_VERIFY_EMAIL: "Invalid data to verify email";
+        readonly INVALID_EMAIL: "Invalid email provided";
+        readonly INVALID_REFRESH_TOKEN: "Invalid refresh token provided";
+        readonly INVALID_PASSWORD: "Invalid password provided";
+        readonly PASSWORD_DOES_NOT_MATCH: "Invalid email or password";
+        readonly LOGIN_FAILED: "Something went wrong while login user. Please try again.";
+        readonly INVALID_AUTHENTICATION_TOKEN: "Invalid or expired token";
+        readonly SIGN_UP_FAILED: "Something went wrong while sign up. Please try again.";
+        readonly INVALID_DATA_TO_LOGIN: "Invalid data to login";
+        readonly REFRESH_TOKEN_FAILED: "Something went wrong while refreshing token. Please try again.";
+        readonly INVALID_DATA_TO_CHECK_EMAIL_AVAILABILITY: "Invalid data to check if email exist";
+        readonly REFRESH_TOKEN_HAS_EXPIRED: "Refresh token has expired";
+        readonly USER_ALREADY_SIGNED_UP: "User is already signed up";
+        readonly USER_HAS_NOT_COMPLETED_SIGN_UP_PROCESS: "User has not completed sign up process";
+        readonly USER_HAS_NOT_VERIFIED_FORGET_PASSWORD: "User has not verified forget password";
+        readonly USER_EMAIL_NOT_VERIFIED: "User email has not verified yet";
+        readonly SIGN_OUT_FAILED: "Something went wrong while sign out. Please try again.";
+        readonly INVALID_DATA_TO_SIGN_OUT_USER: "Invalid data to sign out user";
+        readonly INVALID_ROLE: "Invalid role";
+        readonly INVALID_FIRST_NAME: "Invalid first name";
+        readonly INVALID_LAST_NAME: "Invalid last name";
+        readonly INVALID_USER_TITLE: "Invalid user title";
+        readonly INVALID_DATA_TO_ADD_PERSONAL_INFO: "Invalid data to add personal info of user";
+        readonly PERSONAL_INFO_ALREADY_ADDED: "Personal info of user already been added.";
+        readonly INVALID_USER_ROLE_TO_ADD_PERSONAL_INFO: "Invalid user role to add personal info.";
+        readonly EMAIL_ALREADY_TAKEN: "Email already taken";
+        readonly INVALID_DATA_TO_ADD_ACCOUNTANT: "Invalid data to add accountant";
+        readonly ADDING_PERSONAL_INFO_FAILED: "Something went wrong while adding personal info of user data. Please try again.";
+        readonly FETCHING_USER_FAILED: "Something went wrong while fetching the user data. Please try again.";
+        readonly FETCHING_USER_DATA_FAILED: "Something went wrong while fetching user data. Please try again.";
+        readonly UPDATING_USER_DATA_FAILED: "Something went wrong while updating user data. Please try again.";
+        readonly SIGNUP_REQUEST_ALREADY_RECEIVED: "User has already requested for sign up. Please verify your email.";
+        readonly USER_ALREADY_EXIST: "User already exist";
+        readonly EMAIL_ALREADY_EXIST: "Email already exist";
+        readonly ACCOUNT_ALREADY_EXIST: "Account already exist";
+        readonly INVALID_DATA_TO_SIGNUP_USER: "Invalid data to sign up user";
+        readonly INVALID_DATA_TO_UPDATE_USER: "Invalid data to update user profile";
+        readonly UPDATE_USER_FAILED: "Update user Failed";
+        readonly USER_DOES_NOT_EXIST: "User does not exist";
+        readonly SOMETHING_WENT_WRONG: "Something went wrong. Please try again.";
+        readonly TOKEN_IS_INVALID_OR_EXPIRED: "Token is invalid or expired";
+        readonly UNAUTHORIZED_USER: "User is not Authorized to perform this action";
+    };
+}>;
+//# sourceMappingURL=User.d.ts.map

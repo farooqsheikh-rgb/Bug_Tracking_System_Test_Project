@@ -2,6 +2,7 @@ import { BugConstants, ErrorCodes } from "../../constants";
 import BugHandler from "../../handlers/BugHandler";
 import Exception from "../../helpers/Exception";
 import { BugPayload } from "../../interfaces/Bug";
+import { UserInterface } from "../../interfaces/users";
 import BugUtil from "../../utilities/BugUtil";
 
 class BugManager {
@@ -185,6 +186,31 @@ class BugManager {
     }
 
     return updatedBug;
+  }
+
+  static async getBugsByProject(project_id: number, user: UserInterface, options?: {
+    page?: number;
+    limit?: number;
+    offset?: number;
+    title?: string;
+  }) {
+    if (!project_id) {
+      throw new Exception(
+        BugConstants.MESSAGES.INVALID_PROJECT_ID,
+        ErrorCodes.BAD_REQUEST,
+        { reportError: true }
+      );
+    }
+    if (!user.id) {
+      throw new Exception(
+        BugConstants.MESSAGES.INVALID_USER_ID,
+        ErrorCodes.BAD_REQUEST,
+        { reportError: true }
+      );
+    }
+
+    const bugs = await BugHandler.getBugsByProject(project_id, user!, options);
+    return bugs;
   }
 }
 

@@ -143,7 +143,7 @@ class BugController {
   static async deleteBugById(req: Request, res: Response) {
     try {
       const user = req.user;
-      const bugIdParam = Number(req.params.id);
+      const bugIdParam = Number(req.params.bugId);
 
       const bug = await BugManager.deleteBugById(user?.id, bugIdParam);
 
@@ -279,6 +279,55 @@ class BugController {
           message: appError.reportError
             ? appError.message
             : BugConstants.MESSAGES.UPDATE_BUG_FAILED,
+        });
+    }
+  }
+
+  static async getBugsByProject(req: Request, res: Response) {
+    try {
+      const projectId = Number(req.params.projectId);
+      const user = req.user;
+      
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const title = req.query.title as string || '';
+      
+      const offset = (page - 1) * limit;
+
+      const bugs = await BugManager.getBugsByProject(projectId, user!, {
+        page,
+        limit,
+        offset,
+        title
+      });
+
+      return res.json({
+        success: true,
+        data: bugs.data,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(bugs.total / limit),
+          totalItems: bugs.total,
+          itemsPerPage: limit
+        }
+      });
+    } catch (err) {
+      console.error(`Get Bugs By Project:: Request to get bugs by project failed.`, err);
+
+      const appError = err as Exception;
+
+      return res
+        .status(
+          Validators.validateCode(
+            appError.code ?? ErrorCodes.INTERNAL_SERVER_ERROR,
+            ErrorCodes.INTERNAL_SERVER_ERROR
+          )
+        )
+        .json({
+          success: false,
+          message: appError.reportError
+            ? appError.message
+            : BugConstants.MESSAGES.FETCH_BUGS_FAILED,
         });
     }
   }

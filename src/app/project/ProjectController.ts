@@ -9,8 +9,8 @@ class ProjectController {
   static async createProject(req: Request, res: Response) {
     try {
       const user = req.user;
-      const { name } = req.body;
-      const project = await ProjectManager.createProject(name, user?.id);
+      const { name, description } = req.body;
+      const project = await ProjectManager.createProject(name, description, user?.id);
 
       return res.json({
         success: true,
@@ -40,11 +40,37 @@ class ProjectController {
   static async getAllProjects(req: Request, res: Response) {
     try {
       const user = req.user;
-      const projects = await ProjectManager.listProjectsByManager(user?.id);
+      const { sort = 'name', order = 'asc', page = 1, limit = 9 } = req.query;
+      
+      const pageNumber = Math.max(1, parseInt(page as string) || 1);
+      const pageSize = Math.min(50, Math.max(1, parseInt(limit as string) || 9));
+      const offset = (pageNumber - 1) * pageSize;
+      
+      const validSortFields = ['name', 'created_at', 'updated_at'];
+      const validOrderValues = ['asc', 'desc'];
+      
+      const sortField = validSortFields.includes(sort as string) ? sort as string : 'name';
+      const sortOrder = validOrderValues.includes((order as string).toLowerCase()) ? (order as string).toLowerCase() : 'asc';
+
+      const projects = await ProjectManager.listProjectsByManager(user!, {
+        sortField,
+        sortOrder,
+        page: pageNumber,
+        limit: pageSize,
+        offset
+      });
 
       return res.json({
         success: true,
-        data: projects,
+        data: projects.projects,
+        pagination: {
+          currentPage: pageNumber,
+          totalPages: Math.ceil(projects.total / pageSize),
+          totalItems: projects.total,
+          itemsPerPage: pageSize,
+          hasNextPage: pageNumber < Math.ceil(projects.total / pageSize),
+          hasPrevPage: pageNumber > 1
+        }
       });
     } catch (err) {
       console.error(`Get Projects:: Request to get projects failed.`, err);
@@ -101,16 +127,27 @@ class ProjectController {
   static async searchProjectsByName(req: Request, res: Response) {
     try {
       const user = req.user;
-      const projectName = req.params.name;
+      const projectName = req.params.name || req.query.name as string;
 
-      const project = await ProjectManager.findProjectByName(projectName, user?.id);
+      if (!projectName || projectName.trim() === '') {
+        return res.json({
+          success: true,
+          data: [],
+        });
+      }
+
+      const projects = await ProjectManager.findProjectByName(
+        projectName.trim(), 
+        user?.id, 
+        user?.user_type
+      );
 
       return res.json({
         success: true,
-        data: project,
+        data: projects,
       });
     } catch (err) {
-      console.error(`Search Project:: Request to get project failed.`, err);
+      console.error(`Search Project:: Request to search projects failed.`, err);
 
       const appError = err as Exception;
 
@@ -201,10 +238,9 @@ class ProjectController {
 
   static async getProjectMembers(req: Request, res: Response) {
     try {
-      const managerId = req.user?.id;
       const projectId = Number(req.params.projectId);
 
-      const assignedUsers = await ProjectManager.listProjectMembers(projectId, managerId);
+      const assignedUsers = await ProjectManager.listProjectMembers(projectId);
 
       return res.json({
         success: true,

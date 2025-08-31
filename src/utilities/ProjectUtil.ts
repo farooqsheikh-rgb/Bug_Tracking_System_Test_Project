@@ -3,7 +3,7 @@ import Exception from "../helpers/Exception";
 import Validators from "../helpers/validator";
 
 class ProjectUtil {
-  static validateCreateProjectRequest(name: string, manager_id?: number): void {
+  static validateCreateProjectRequest(name: string, description: string, manager_id?: number): void {
     if (!name || !Validators.isValidStr(name)) {
       throw new Exception(
         ProjectConstants.MESSAGES.PROJECT_NAME_REQUIRED,
@@ -12,19 +12,27 @@ class ProjectUtil {
       );
     }
 
+    if (!name || !Validators.isValidStr(description)) {
+      throw new Exception(
+        ProjectConstants.MESSAGES.PROJECT_DESCRIPTION_REQUIRED,
+        ErrorCodes.BAD_REQUEST,
+        { reportError: true }
+      );
+    }
+
     if (!Validators.isValidNumber(manager_id)) {
       throw new Exception(
-        ProjectConstants.MESSAGES.INVALID_MANAGER_ID,
+        ProjectConstants.MESSAGES.INVALID_USER_ID,
         ErrorCodes.BAD_REQUEST,
         { reportError: true }
       );
     }
   }
 
-  static validateManagerId(manager_id?: number): void {
-    if (!Validators.isValidNumber(manager_id)) {
+  static validateUserId(user_id?: number): void {
+    if (!Validators.isValidNumber(user_id)) {
       throw new Exception(
-        ProjectConstants.MESSAGES.INVALID_MANAGER_ID,
+        ProjectConstants.MESSAGES.INVALID_USER_ID,
         ErrorCodes.BAD_REQUEST,
         { reportError: true }
       );
@@ -58,7 +66,7 @@ class ProjectUtil {
   ): void {
     if (!Validators.isValidNumber(managerId)) {
       throw new Exception(
-        ProjectConstants.MESSAGES.INVALID_MANAGER_ID,
+        ProjectConstants.MESSAGES.INVALID_USER_ID,
         ErrorCodes.BAD_REQUEST,
         { reportError: true }
       );

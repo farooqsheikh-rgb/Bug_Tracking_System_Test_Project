@@ -17,8 +17,8 @@ router.post(
 
 router.get(
   "/",
-  Authentication.hasAnyRole(["manager", "QA"]),
-  Permissions.checkPermission,
+  Authentication.hasAnyRole(["manager", "QA", "developer"]),
+  Permissions.checkPermissionForBugs,
   BugController.getAllBugsByQA
 );
 
@@ -37,8 +37,8 @@ router.get(
 );
 
 router.delete(
-  "/:id",
-  Authentication.hasRole("QA"),
+  "/:bugId",
+  Authentication.hasAnyRole(["manager", "QA"]),
   BugController.deleteBugById
 );
 
@@ -69,5 +69,10 @@ router.patch(
   BugController.updateBugStatus
 );
 
+router.get(
+  "/project/:projectId",
+  Authentication.hasAnyRole(["manager", "QA", "developer"]),
+  BugController.getBugsByProject
+);
 
 export default router;

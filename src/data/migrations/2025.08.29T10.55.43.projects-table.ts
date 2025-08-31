@@ -13,6 +13,10 @@ export const up: Migration = async ({ context: sequelize }) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     manager_id: {
       type: DataTypes.INTEGER,
       allowNull: false,

@@ -18,6 +18,7 @@ export const BugConstants = Object.freeze({
     GET_BUG_ASSIGNEES_FAILED: "Failed to fetch bug assignees",
     INVALID_BUG_ID: "Invalid bug ID",
     BUG_NOT_FOUND: "Bug not found",
+    PROJECTS_NOT_FOUND: "Projects not found",
     BUG_ID_REQUIRED: "Bug ID is required",
     TITLE_REQUIRED: "Bug title is required",
     INVALID_BUG_TITLE_FORMAT: "Bug title must be a non-empty string",

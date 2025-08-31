@@ -31,6 +31,11 @@ export default class Project extends Model {
   @Column({ type: DataType.STRING })
   name!: string;
 
+  @AllowNull(false)
+  @NotEmpty
+  @Column({ type: DataType.STRING })
+  description!: string;
+
   @ForeignKey(() => User)
   @AllowNull(false)
   @Column(DataType.INTEGER)

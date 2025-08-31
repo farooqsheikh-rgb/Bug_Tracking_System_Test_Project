@@ -8,11 +8,12 @@ export const ProjectConstants = Object.freeze({
     PROJECT_ID_REQUIRED: "Project ID is required",
     PROJECT_ID_MUST_BE_NUMBER: "Project ID must be a number",
     PROJECT_NAME_REQUIRED: "Project Name is required",
+    PROJECT_DESCRIPTION_REQUIRED: "Project Description is required",
     INVALID_REQUEST: "Invalid request!",
     MISSING_PROJECT_OR_MANAGER_ID: "Missing projectId or managerId.",
     ADD_PROJECT_MEMBERS_FAILED:"Failed to add project members",
     GET_PROJECT_MEMBERS_FAILED:"Failed to get project members",
-    INVALID_MANAGER_ID:"Invalid Project ID",
+    INVALID_USER_ID:"Invalid Project ID",
     INVALID_USER_IDS:"Invalid User IDs",
     INVALID_USER_ID_IN_ARRAY:"Any User ID entered invalid in array"
   }

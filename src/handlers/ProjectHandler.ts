@@ -56,7 +56,7 @@ class ProjectHandler {
     offset?: number;
   }) {
     const { sortField = 'name', sortOrder = 'asc', limit = 9, offset = 0 } = options || {};
-    
+
     const { count, rows } = await Project.findAndCountAll({
       where: { manager_id },
       order: [[sortField, sortOrder.toUpperCase()]],
@@ -83,7 +83,7 @@ class ProjectHandler {
       where: { user_id: user_id },
     });
 
-    if (!memberships || memberships.length === 0) {
+    if (!memberships?.length) {
       return {
         projects: [],
         total: 0

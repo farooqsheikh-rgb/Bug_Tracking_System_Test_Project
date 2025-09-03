@@ -4,40 +4,54 @@ import User from "../models/user";
 import { Op } from "sequelize";
 
 class ProjectHandler {
-  static async findProjectByName(name: string, user_id: number, user_type: string) {
-    if (user_type === 'manager') {
+  static async findProjectByName(
+    name: string,
+    user_id: number,
+    user_type: string
+  ) {
+    if (user_type === "manager") {
       const projects = await Project.findAll({
         where: {
           manager_id: user_id,
           name: {
-            [Op.iLike]: `%${name}%`
-          }
-        }
+            [Op.iLike]: `%${name}%`,
+          },
+        },
       });
       return projects;
     }
-    
-    if (user_type === 'developer' || user_type === 'QA') {
-      const memberships = await ProjectMembers.findAll({
-        where: { user_id: user_id },
+
+    if (user_type === "developer" || user_type === "QA") {
+      const userWithProjects = await User.findOne({
+        where: { id: user_id },
+        include: [
+          {
+            model: Project,
+            as: "assignedProjects",
+            where: {
+              name: {
+                [Op.iLike]: `%${name}%`,
+              },
+            },
+            include: [
+              {
+                model: User,
+                as: "manager",
+                attributes: ["id", "name", "email"],
+              },
+              {
+                model: User,
+                as: "assignedUsers",
+                attributes: ["id", "name"],
+                through: { attributes: [] },
+              },
+            ],
+          },
+        ],
+        attributes: ["id", "name", "email"],
       });
 
-      if (!memberships || memberships.length === 0) {
-        return [];
-      }
-
-      const projectIds = memberships.map(m => m.project_id);
-
-      const projects = await Project.findAll({
-        where: {
-          id: projectIds,
-          name: {
-            [Op.iLike]: `%${name}%`
-          }
-        }
-      });
-      
-      return projects;
+      return userWithProjects?.assignedProjects || [];
     }
 
     return [];
@@ -48,37 +62,53 @@ class ProjectHandler {
     return project.save();
   }
 
-  static async fetchProjectsByManager(manager_id: number, options?: {
-    sortField?: string;
-    sortOrder?: string;
-    page?: number;
-    limit?: number;
-    offset?: number;
-  }) {
-    const { sortField = 'name', sortOrder = 'asc', limit = 9, offset = 0 } = options || {};
+  static async fetchProjectsByManager(
+    manager_id: number,
+    options?: {
+      sortField?: string;
+      sortOrder?: string;
+      page?: number;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    const {
+      sortField = "name",
+      sortOrder = "asc",
+      limit = 9,
+      offset = 0,
+    } = options || {};
 
     const { count, rows } = await Project.findAndCountAll({
       where: { manager_id },
       order: [[sortField, sortOrder.toUpperCase()]],
       limit,
-      offset
+      offset,
     });
-    
+
     return {
       projects: rows,
-      total: count
+      total: count,
     };
   }
 
-  static async fetchProjectsByQAOrDeveloper(user_id: number, options?: {
-    sortField?: string;
-    sortOrder?: string;
-    page?: number;
-    limit?: number;
-    offset?: number;
-  }) {
-    const { sortField = 'name', sortOrder = 'asc', limit = 9, offset = 0 } = options || {};
-    
+  static async fetchProjectsByQAOrDeveloper(
+    user_id: number,
+    options?: {
+      sortField?: string;
+      sortOrder?: string;
+      page?: number;
+      limit?: number;
+      offset?: number;
+    }
+  ) {
+    const {
+      sortField = "name",
+      sortOrder = "asc",
+      limit = 9,
+      offset = 0,
+    } = options || {};
+
     const memberships = await ProjectMembers.findAll({
       where: { user_id: user_id },
     });
@@ -86,11 +116,11 @@ class ProjectHandler {
     if (!memberships?.length) {
       return {
         projects: [],
-        total: 0
+        total: 0,
       };
     }
 
-    const projectIds = memberships.map(m => m.project_id);
+    const projectIds = memberships.map((m) => m.project_id);
 
     const { count, rows } = await Project.findAndCountAll({
       where: {
@@ -98,12 +128,12 @@ class ProjectHandler {
       },
       order: [[sortField, sortOrder.toUpperCase()]],
       limit,
-      offset
+      offset,
     });
-    
+
     return {
       projects: rows,
-      total: count
+      total: count,
     };
   }
 
@@ -152,9 +182,7 @@ class ProjectHandler {
     return assignedUsers;
   }
 
-  static async fetchAssignedMembersForProjectByManager(
-    projectId: number
-  ) {
+  static async fetchAssignedMembersForProjectByManager(projectId: number) {
     const project = await Project.findOne({
       where: { id: projectId },
       include: [
@@ -171,9 +199,7 @@ class ProjectHandler {
     return project.assignedUsers;
   }
 
-  static async fetchAssignedMembersForProject(
-    userId: number
-  ) {
+  static async fetchAssignedMembersForProject(userId: number) {
     const memberships = await ProjectMembers.findAll({
       where: { user_id: userId },
     });
@@ -182,14 +208,14 @@ class ProjectHandler {
       throw new Error("Projects not found");
     }
 
-    const projectIds = memberships.map(m => m.project_id);
+    const projectIds = memberships.map((m) => m.project_id);
 
     const projects = await Project.findAll({
       where: {
         id: projectIds,
       },
     });
-    
+
     return projects;
   }
 }

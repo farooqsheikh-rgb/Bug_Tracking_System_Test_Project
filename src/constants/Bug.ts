@@ -9,7 +9,7 @@ export const BugConstants = Object.freeze({
     INVALID_BUG_SCREENSHOT: "Invalid bug screenshot",
     INVALID_PROJECT_ID: "Invalid project ID",
     INVALID_USER_ID: "Invalid user ID",
-    CREATE_BUG_FAILED: "Failed to create bug",
+    CREATE_BUG_FAILED: "Failed to create bug - Bug Already Exits!",
     FETCH_BUGS_FAILED: "Failed to fetch bugs",
     GET_BUG_BY_ID_FAILED: "Failed to fetch bug by ID",
     DELETE_BUG_FAILED: "Failed to delete bug",

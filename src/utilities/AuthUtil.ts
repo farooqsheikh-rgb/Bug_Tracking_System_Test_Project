@@ -38,12 +38,12 @@ class AuthUtil {
   static validateUserToAuthenticate(user: UserInterface ): void {
     if (!user) {
       console.log(
-        `validateUserToAuthenticate:: User does not exist. user:: `,
+        `validateUserToAuthenticate:: Invalid email or password user:: `,
         user
       );
 
       throw new Exception(
-        UserConstants.MESSAGES.USER_DOES_NOT_EXIST,
+        UserConstants.MESSAGES.PASSWORD_DOES_NOT_MATCH,
         ErrorCodes.BAD_REQUEST,
         { reportError: true }
       ).toJson();

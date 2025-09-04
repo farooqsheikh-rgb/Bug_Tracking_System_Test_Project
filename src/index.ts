@@ -13,6 +13,7 @@ server.listen(port, async () => {
   console.log(`Running on Port:${port}`);
   try {
     await sequelize.authenticate();
+    //await sequelize.sync({ force: true });
   } catch (error) {
     const err = error as Error;
     console.log(err.message);
